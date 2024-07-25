@@ -1,5 +1,6 @@
 // ContactUI.cpp
 #include "ContactUI.hpp"
+#include "ContactManager.hpp" // Include to access the template function
 #include <iostream>
 #include <thread>
 
@@ -83,7 +84,7 @@ void ContactUI::addContact() {
     } else {
         m_contactManager.addContact(Contact(name, phone, email));
     }
-    
+
     std::cout << "Contact added successfully!" << std::endl;
 }
 
@@ -91,46 +92,61 @@ void ContactUI::removeContact() {
     unsigned char index;
     std::cout << "Enter the index of the contact to remove: ";
     std::cin >> index;
-    m_contactManager.removeContact(index);
-    std::cout << "Contact removed successfully!" << std::endl;
+    std::cin.ignore(); // Ignore the newline character
+    
+    try {
+        m_contactManager.removeContact(index);
+        std::cout << "Contact removed successfully!" << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
 
 void ContactUI::displayContacts() {
-    m_contactManager.displayContacts();
+    m_contactManager.displayAllContacts(); // Call the renamed function
 }
 
 void ContactUI::findContactsByName() {
     std::string name;
     std::cout << "Enter the name to search for: ";
     std::getline(std::cin, name);
+    
     auto foundContacts = m_contactManager.findContactsByName(name);
     if (foundContacts.empty()) {
-        std::cout << "No contacts found with the given name." << std::endl;
+        std::cout << "No contacts found with the name: " << name << std::endl;
     } else {
-        std::cout << "Contacts found:" << std::endl;
-        displayContacts(foundContacts);
+        std::cout << "Found contacts:" << std::endl;
+        contact_management::displayContacts(foundContacts); // Call the template function with found contacts
     }
 }
 
 void ContactUI::saveContactsToFile() {
     std::string filename;
-    std::cout << "Enter the filename to save contacts: ";
+    std::cout << "Enter the filename to save to: ";
     std::getline(std::cin, filename);
     
-    // Save contacts to file asynchronously using a separate thread
-    std::thread saveThread([this, filename]() { // Lambda function
+    try {
         m_contactManager.saveToFile(filename);
-        std::cout << "Contacts saved to file successfully!" << std::endl;
-    });
-    saveThread.detach(); // Detach the thread to run in the background
+        std::cout << "Contacts saved successfully!" << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
 
 void ContactUI::loadContactsFromFile() {
     std::string filename;
-    std::cout << "Enter the filename to load contacts from: ";
+    std::cout << "Enter the filename to load from: ";
     std::getline(std::cin, filename);
-    m_contactManager.loadFromFile(filename);
-    std::cout << "Contacts loaded from file successfully!" << std::endl;
+    
+    try {
+        m_contactManager.loadFromFile(filename);
+        std::cout << "Contacts loaded successfully!" << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
 
 } // namespace contact_management

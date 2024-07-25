@@ -28,7 +28,7 @@ public:
     void removeContact(unsigned char index); // Unsigned char for better memory efficiency
     
     // Display all contacts
-    void displayContacts() const; // Const member function
+    void displayAllContacts() const; // Renamed to avoid confusion
     
     // Save contacts to a file
     void saveToFile(const std::string& filename) const; // Const reference for function parameter and const member function
