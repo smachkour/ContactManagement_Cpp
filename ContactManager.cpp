@@ -85,4 +85,13 @@ std::vector<std::shared_ptr<Contact>> ContactManager::findContactsByName(const s
     return foundContacts;
 }
 
+std::vector<std::shared_ptr<Contact>> ContactManager::filterContacts(const std::function<bool(const Contact&)>& filter) const {
+    std::vector<std::shared_ptr<Contact>> filteredContacts;
+    std::copy_if(m_contacts.begin(), m_contacts.end(), std::back_inserter(filteredContacts),
+                 [&filter](const std::shared_ptr<Contact>& contact) {
+                     return filter(*contact);
+                 });
+    return filteredContacts;
+}
+
 } // namespace contact_management

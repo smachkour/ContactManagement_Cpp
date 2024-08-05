@@ -7,6 +7,7 @@
 #include <memory>
 #include <fstream>
 #include <iostream>
+#include <functional>
 
 namespace contact_management { // Everything in a self-made namespace
 
@@ -38,6 +39,13 @@ public:
 
     // Find contacts by name
     std::vector<std::shared_ptr<Contact>> findContactsByName(const std::string& name) const; // Const reference for function parameter and const member function
+
+// New function to filter contacts
+    std::vector<std::shared_ptr<Contact>> filterContacts(const std::function<bool(const Contact&)>& filter) const;
+
+    // New function to get contact count
+    size_t getContactCount() const { return m_contacts.size(); }
+
 
 private:
     std::vector<std::shared_ptr<Contact>> m_contacts; // Member variable using a container class and dynamic memory allocation

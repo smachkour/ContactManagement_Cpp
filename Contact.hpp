@@ -3,6 +3,7 @@
 #define CONTACT_H
 
 #include <string>
+#include <memory>
 
 namespace contact_management { // Everything in a self-made namespace
 
@@ -35,6 +36,12 @@ public:
     // Virtual function for displaying contact details (dynamic polymorphism)
     virtual void displayDetails() const;
 
+
+    // New function to create a shared_ptr of Contact
+    static std::shared_ptr<Contact> create(const std::string& name, const std::string& phone, const std::string& email) {
+        return std::make_shared<Contact>(name, phone, email);
+    }
+
 private:
     std::string m_name; // Member variable
     std::string m_phone; // Member variable
@@ -62,6 +69,12 @@ public:
 
     // Override displayDetails function (dynamic polymorphism)
     void displayDetails() const override;
+
+        // New function to create a shared_ptr of BusinessContact
+    static std::shared_ptr<BusinessContact> create(const std::string& name, const std::string& phone, const std::string& email, const std::string& company) {
+        return std::make_shared<BusinessContact>(name, phone, email, company);
+    }
+
 
 private:
     std::string m_company; // Member variable

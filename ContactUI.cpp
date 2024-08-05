@@ -3,19 +3,23 @@
 #include "ContactManager.hpp" // Include to access the template function
 #include <iostream>
 #include <thread>
+namespace contact_management {
 
-namespace contact_management { // Everything in a self-made namespace
-
-ContactUI::ContactUI() {}
+ContactUI::ContactUI() : m_isRunning(true) {}
 
 void ContactUI::run() {
     unsigned char choice;
     do {
         displayMenu();
         std::cin >> choice;
-        std::cin.ignore(); // Ignore the newline character
+        std::cin.ignore();
         
-        try { // Exception handling
+        if (!isValidChoice(choice)) {
+            std::cout << "Invalid choice. Please try again." << std::endl;
+            continue;
+        }
+
+        try {
             switch (choice) {
                 case '1':
                     addContact();
@@ -36,10 +40,8 @@ void ContactUI::run() {
                     loadContactsFromFile();
                     break;
                 case '7':
+                    m_isRunning = false;
                     std::cout << "Exiting..." << std::endl;
-                    break;
-                default:
-                    std::cout << "Invalid choice. Please try again." << std::endl;
                     break;
             }
         }
@@ -48,7 +50,14 @@ void ContactUI::run() {
         }
         
         std::cout << std::endl;
-    } while (choice != '7');
+    } while (m_isRunning);
+
+    // Using a thread to display contact count after a delay
+    std::thread countThread([this]() {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        displayContactCount(*this);
+    });
+    countThread.join();
 }
 
 void ContactUI::displayMenu() {
@@ -147,6 +156,25 @@ void ContactUI::loadContactsFromFile() {
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
+}
+
+
+void ContactUI::filterContacts(const std::function<bool(const Contact&)>& filter) {
+    auto filteredContacts = m_contactManager.filterContacts(filter);
+    displayFilteredContacts(filteredContacts);
+}
+
+void ContactUI::displayFilteredContacts(const std::vector<std::shared_ptr<Contact>>& contacts) {
+    for (const auto& contact : contacts) {
+        contact->displayDetails();
+        std::cout << std::endl;
+    }
+}
+
+
+// Implement the friend function
+void displayContactCount(const ContactUI& ui) {
+    std::cout << "Total contacts: " << ui.m_contactManager.getContactCount() << std::endl;
 }
 
 } // namespace contact_management
