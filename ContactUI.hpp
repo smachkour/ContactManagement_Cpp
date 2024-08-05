@@ -31,8 +31,12 @@ private:
 
     // Inline function
     inline bool isValidChoice(char choice) const {
-        return choice >= '1' && choice <= '7';
+        return choice >= '1' && choice <= '9';
     }
+
+    void setFavoriteContact();
+    void displayFavoriteContact();
+    void setFavoriteContact(unsigned char index);
 
     ContactManager m_contactManager;
     bool m_isRunning;  // New bool member

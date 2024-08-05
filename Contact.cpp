@@ -17,7 +17,7 @@ Contact::Contact(const Contact& other)
 Contact::~Contact() {} // Destructor
 
 void Contact::setName(const std::string& name) {
-    m_name = name;
+    this->m_name = name;
 }
 
 std::string Contact::getName() const {
@@ -25,7 +25,7 @@ std::string Contact::getName() const {
 }
 
 void Contact::setPhone(const std::string& phone) {
-    m_phone = phone;
+    this->m_phone = phone;
 }
 
 std::string Contact::getPhone() const {
@@ -33,7 +33,7 @@ std::string Contact::getPhone() const {
 }
 
 void Contact::setEmail(const std::string& email) {
-    m_email = email;
+    this->m_email = email;
 }
 
 std::string Contact::getEmail() const {

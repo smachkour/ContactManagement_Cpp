@@ -8,6 +8,9 @@
 #include <fstream>
 #include <iostream>
 #include <functional>
+#include <thread>
+#include <atomic>
+#include <chrono>
 
 namespace contact_management { // Everything in a self-made namespace
 
@@ -46,9 +49,26 @@ public:
     // New function to get contact count
     size_t getContactCount() const { return m_contacts.size(); }
 
+        // New methods for favorite contact
+    void setFavoriteContact(unsigned char index);
+    void clearFavoriteContact();
+    const Contact* getFavoriteContact() const;
+
+    
+
 
 private:
     std::vector<std::shared_ptr<Contact>> m_contacts; // Member variable using a container class and dynamic memory allocation
+    mutable bool m_isModified;  // New bool to track if contacts have been modified
+    bool m_isLoaded;    // New bool to track if contacts have been loaded from a file
+    bool m_isSorted;    // New bool to track if contacts are sorted
+    std::shared_ptr<Contact> m_favoriteContact;  // New member variable
+
+        std::thread m_autoSaveThread;
+    std::atomic<bool> m_stopAutoSave;
+    void autoSaveFunction();
+    void startAutoSave();
+    void stopAutoSave();
 };
 
 // Template function for displaying a container of contacts

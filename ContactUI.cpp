@@ -40,6 +40,12 @@ void ContactUI::run() {
                     loadContactsFromFile();
                     break;
                 case '7':
+                    setFavoriteContact();
+                    break;
+                case '8':
+                    displayFavoriteContact();
+                    break;
+                case '9':
                     m_isRunning = false;
                     std::cout << "Exiting..." << std::endl;
                     break;
@@ -68,7 +74,9 @@ void ContactUI::displayMenu() {
     std::cout << "4. Find Contacts by Name" << std::endl;
     std::cout << "5. Save Contacts to File" << std::endl;
     std::cout << "6. Load Contacts from File" << std::endl;
-    std::cout << "7. Exit" << std::endl;
+    std::cout << "7. Set Favorite Contact" << std::endl;
+    std::cout << "8. Display Favorite Contact" << std::endl;
+    std::cout << "9. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
@@ -168,6 +176,31 @@ void ContactUI::displayFilteredContacts(const std::vector<std::shared_ptr<Contac
     for (const auto& contact : contacts) {
         contact->displayDetails();
         std::cout << std::endl;
+    }
+}
+
+void ContactUI::setFavoriteContact() {
+    unsigned char index;
+    std::cout << "Enter the index of the contact to set as favorite: ";
+    std::cin >> index;
+    std::cin.ignore();
+    
+    try {
+        m_contactManager.setFavoriteContact(index);
+        std::cout << "Favorite contact set successfully!" << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+}
+
+void ContactUI::displayFavoriteContact() {
+    const Contact* favoriteContact = m_contactManager.getFavoriteContact();
+    if (favoriteContact == nullptr) {
+        std::cout << "No favorite contact set." << std::endl;
+    } else {
+        std::cout << "Favorite Contact:" << std::endl;
+        favoriteContact->displayDetails();
     }
 }
 

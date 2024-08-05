@@ -7,23 +7,73 @@
 
 namespace contact_management { // Everything in a self-made namespace
 
-ContactManager::ContactManager() {}
+ContactManager::ContactManager() 
+    : m_isModified(false), m_isLoaded(false), m_isSorted(true), m_favoriteContact(nullptr), m_stopAutoSave(false) {
+    startAutoSave();
+}
 
-ContactManager::ContactManager(const std::string& filename) { // Const reference for function parameter
+ContactManager::ContactManager(const std::string& filename) 
+    : m_isModified(false), m_isLoaded(false), m_isSorted(false), m_favoriteContact(nullptr) {
     loadFromFile(filename);
 }
 
-ContactManager::~ContactManager() {}
-
-void ContactManager::addContact(const Contact& contact) { // Const reference for function parameter
-    m_contacts.push_back(std::make_shared<Contact>(contact)); // Dynamic memory allocation
+ContactManager::~ContactManager() {
+    stopAutoSave();
 }
 
-void ContactManager::removeContact(unsigned char index) { // Unsigned char for better memory efficiency
+void ContactManager::autoSaveFunction() {
+    while (!m_stopAutoSave) {
+        std::this_thread::sleep_for(std::chrono::seconds(30));  // Auto-save every 30 seconds
+        if (m_isModified) {
+            saveToFile("auto_save.txt");
+            std::cout << "Auto-saved contacts." << std::endl;
+        }
+    }
+}
+
+void ContactManager::startAutoSave() {
+    m_stopAutoSave = false;
+    m_autoSaveThread = std::thread(&ContactManager::autoSaveFunction, this);
+}
+
+void ContactManager::stopAutoSave() {
+    m_stopAutoSave = true;
+    if (m_autoSaveThread.joinable()) {
+        m_autoSaveThread.join();
+    }
+}
+
+void ContactManager::addContact(const Contact& contact) {
+    m_contacts.push_back(std::make_shared<Contact>(contact));
+    m_isModified = true;
+    m_isSorted = false;
+}
+
+// In the removeContact method, add this check:
+void ContactManager::removeContact(unsigned char index) {
     if (index >= m_contacts.size()) {
-        throw std::out_of_range("Invalid contact index"); // Exception handling
+        throw std::out_of_range("Invalid contact index");
+    }
+    if (m_contacts[index] == m_favoriteContact) {
+        m_favoriteContact = nullptr;  // Clear favorite if it's being removed
     }
     m_contacts.erase(m_contacts.begin() + index);
+    m_isModified = true;
+}
+
+void ContactManager::clearFavoriteContact() {
+    m_favoriteContact = nullptr;
+}
+
+const Contact* ContactManager::getFavoriteContact() const {
+    return m_favoriteContact.get();
+}
+
+void ContactManager::setFavoriteContact(unsigned char index) {
+    if (index >= m_contacts.size()) {
+        throw std::out_of_range("Invalid contact index");
+    }
+    m_favoriteContact = m_contacts[index];
 }
 
 void ContactManager::displayAllContacts() const { // Renamed to avoid confusion
@@ -47,6 +97,7 @@ void ContactManager::saveToFile(const std::string& filename) const { // Const re
         }
         file << std::endl;
     }
+        m_isModified = false;
 }
 
 void ContactManager::loadFromFile(const std::string& filename) { // Const reference for function parameter
@@ -73,6 +124,10 @@ void ContactManager::loadFromFile(const std::string& filename) { // Const refere
         
         file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore any extra newline characters
     }
+
+    m_isLoaded = true;
+    m_isModified = false;
+    m_isSorted = false;
 }
 
 std::vector<std::shared_ptr<Contact>> ContactManager::findContactsByName(const std::string& name) const { // Const reference for function parameter and const member function
