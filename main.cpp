@@ -1,12 +1,9 @@
-// main.cpp
-#include "ContactUI.hpp"
-
-using namespace contact_management;
+#include "ContactGUI.hpp"
 
 int main() {
-    ContactUI contactUI;
-    contactUI.run();
-    
-    return 0;
+    contact_management::ContactManager manager;
+    contact_management::ContactGUI gui(manager);
+    gui.show();
+    return Fl::run();
 }
 

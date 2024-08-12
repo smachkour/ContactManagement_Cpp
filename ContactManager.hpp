@@ -54,6 +54,9 @@ public:
     void clearFavoriteContact();
     const Contact* getFavoriteContact() const;
 
+    // In the public section of the ContactManager class
+const std::vector<std::shared_ptr<Contact>>& getContacts() const { return m_contacts; }
+
     
 
 

@@ -44,7 +44,11 @@ void ContactManager::stopAutoSave() {
 }
 
 void ContactManager::addContact(const Contact& contact) {
-    m_contacts.push_back(std::make_shared<Contact>(contact));
+    if (const BusinessContact* businessContact = dynamic_cast<const BusinessContact*>(&contact)) {
+        m_contacts.push_back(std::make_shared<BusinessContact>(*businessContact));
+    } else {
+        m_contacts.push_back(std::make_shared<Contact>(contact));
+    }
     m_isModified = true;
     m_isSorted = false;
 }
@@ -79,50 +83,50 @@ void ContactManager::setFavoriteContact(unsigned char index) {
 void ContactManager::displayAllContacts() const { // Renamed to avoid confusion
     displayContacts(m_contacts);
 }
-
-void ContactManager::saveToFile(const std::string& filename) const { // Const reference for function parameter and const member function
-    std::ofstream file(filename); // File I/O
+void ContactManager::saveToFile(const std::string& filename) const {
+    std::ofstream file(filename);
     if (!file) {
-        throw std::runtime_error("Unable to open file for writing"); // Exception handling
+        throw std::runtime_error("Unable to open file for writing");
     }
 
-    for (const auto& contact : m_contacts) { // Range-based for loop
-        file << contact->getName() << std::endl;
-        file << contact->getPhone() << std::endl;
-        file << contact->getEmail() << std::endl;
+    for (const auto& contact : m_contacts) {
+        file << "Name: " << contact->getName() << std::endl;
+        file << "Phone: " << contact->getPhone() << std::endl;
+        file << "Email: " << contact->getEmail() << std::endl;
         
-        // Check if the contact is a BusinessContact (dynamic polymorphism ). If so, save the company field as well.
         if (const BusinessContact* businessContact = dynamic_cast<const BusinessContact*>(contact.get())) {
-            file << businessContact->getCompany() << std::endl;
+            file << "Company: " << businessContact->getCompany() << std::endl;
         }
         file << std::endl;
     }
-        m_isModified = false;
+    m_isModified = false;
 }
 
-void ContactManager::loadFromFile(const std::string& filename) { // Const reference for function parameter
-    std::ifstream file(filename); // File I/O
+void ContactManager::loadFromFile(const std::string& filename) {
+    std::ifstream file(filename);
     if (!file) {
-        throw std::runtime_error("Unable to open file for reading"); // Exception handling
+        throw std::runtime_error("Unable to open file for reading");
     }
 
-    std::string name;
-    std::string phone;
-    std::string email;
-    std::string company;
-
-    while (std::getline(file, name)) { // String handling
-        std::getline(file, phone);
-        std::getline(file, email);
-        std::getline(file, company);
-        
-        if (!company.empty()) {
-            m_contacts.push_back(std::make_shared<BusinessContact>(name, phone, email, company)); // Dynamic memory allocation
-        } else {
-            m_contacts.push_back(std::make_shared<Contact>(name, phone, email)); // Dynamic memory allocation
+    m_contacts.clear();
+    std::string line, name, phone, email, company;
+    
+    while (std::getline(file, line)) {
+        if (line.find("Name: ") == 0) {
+            name = line.substr(6);
+            if (!std::getline(file, line) || line.find("Phone: ") != 0) break;
+            phone = line.substr(7);
+            if (!std::getline(file, line) || line.find("Email: ") != 0) break;
+            email = line.substr(7);
+            
+            if (std::getline(file, line) && line.find("Company: ") == 0) {
+                company = line.substr(9);
+                m_contacts.push_back(std::make_shared<BusinessContact>(name, phone, email, company));
+            } else {
+                m_contacts.push_back(std::make_shared<Contact>(name, phone, email));
+                if (!line.empty()) file.seekg(-line.length()-1, std::ios_base::cur);
+            }
         }
-        
-        file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore any extra newline characters
     }
 
     m_isLoaded = true;
