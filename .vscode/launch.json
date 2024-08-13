@@ -2,10 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch my_program",
+      "name": "Launch ContactManagement",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/my_program.exe",
+      "program": "${workspaceFolder}/build/ContactManagement.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -20,10 +20,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "build",
-      "logging": {
-        "engineLogging": true
-      }
+      "preLaunchTask": "make"
     },
     {
       "name": "C/C++ Runner: Debug Session",
