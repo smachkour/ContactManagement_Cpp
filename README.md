@@ -11,17 +11,25 @@ This is a C++ project (cli) for managing contacts, including personal and busine
 ## Building the Project
 
 1. Clone the repository:
-git clone https://github.com/yourusername/CONTACTMANAGEMENT_CPP.git
+```
+git clone https://github.com/smachkour/CONTACTMANAGEMENT_CPP.git
+```
+```
 cd CONTACTMANAGEMENT_CPP
+```
 
-2. Create a build directory:
+3. Create a build directory:
+```
 mkdir build
+```
+```
 cd build
-
-3. Generate the build files with CMake:
+```
+4. Generate the build files with CMake:
+```
 cmake ..
-
-4. Build the project:
+```
+5. Build the project:
 - On Windows with MinGW:
   ```
   mingw32-make
@@ -50,7 +58,7 @@ cmake ..
 After building, you can run the program:
 
 - From the command line, navigate to the `build` directory and run:
-./ContactManagement
+```./ContactManagement```
 
 (On Windows, use `ContactManagement.exe`)
 
