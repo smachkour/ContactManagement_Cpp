@@ -52,6 +52,9 @@ void ContactUI::run() {
                     importContactsFromJson();
                     break;
                 case 11:
+                    filterContacts();
+                    break;
+                case 12:
                     m_isRunning = false;
                     std::cout << "Exiting..." << std::endl;
                     break;
@@ -86,7 +89,8 @@ void ContactUI::displayMenu() {
     std::cout << "8. Display Favorite Contact" << std::endl;
     std::cout << "9. Export Contacts to JSON" << std::endl;
     std::cout << "10. Import Contacts from JSON" << std::endl;
-    std::cout << "11. Exit" << std::endl;
+    std::cout << "11. Filter Contacts" << std::endl;
+    std::cout << "12. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
@@ -177,7 +181,48 @@ void ContactUI::loadContactsFromFile() {
 }
 
 
-void ContactUI::filterContacts(const std::function<bool(const Contact&)>& filter) {
+// Implement the new method
+void ContactUI::filterContacts() {
+    std::cout << "Filter options:\n";
+    std::cout << "1. Filter by name starting with\n";
+    std::cout << "2. Filter business contacts\n";
+    std::cout << "3. Filter by phone area code\n";
+    std::cout << "Enter your choice: ";
+
+    std::string choice;
+    std::getline(std::cin, choice);
+
+    std::function<bool(const Contact&)> filter;
+
+    switch (std::stoi(choice)) {
+        case 1: {
+            std::cout << "Enter starting letters: ";
+            std::string start;
+            std::getline(std::cin, start);
+            filter = [start](const Contact& c) { 
+                return c.getName().substr(0, start.length()) == start;
+            };
+            break;
+        }
+        case 2:
+            filter = [](const Contact& c) { 
+                return dynamic_cast<const BusinessContact*>(&c) != nullptr;
+            };
+            break;
+        case 3: {
+            std::cout << "Enter area code: ";
+            std::string areaCode;
+            std::getline(std::cin, areaCode);
+            filter = [areaCode](const Contact& c) { 
+                return c.getPhone().substr(0, areaCode.length()) == areaCode;
+            };
+            break;
+        }
+        default:
+            std::cout << "Invalid choice. No filter applied.\n";
+            return;
+    }
+
     auto filteredContacts = m_contactManager.filterContacts(filter);
     displayFilteredContacts(filteredContacts);
 }
@@ -225,6 +270,8 @@ void ContactUI::displayFavoriteContact() {
     } else {
         std::cout << "Favorite Contact:" << std::endl;
         favoriteContact->displayDetails();
+
+        
     }
 }
 

@@ -36,20 +36,19 @@ private:
     void loadContactsFromFile();
     
     // New function with default parameter
-    void filterContacts(const std::function<bool(const Contact&)>& filter = [](const Contact&) { return true; });
+    void filterContacts();
 
 inline bool isValidChoice(const std::string& choice) const {
     if (choice.length() == 1) {
         return choice[0] >= '1' && choice[0] <= '9';
     } else if (choice.length() == 2) {
-        return choice == "10" || choice == "11";
+        return choice == "10" || choice == "11" || choice == "12";
     }
     return false;
 }
 
     void setFavoriteContact();
     void displayFavoriteContact();
-    void setFavoriteContact();
 
     ContactManager m_contactManager;
     bool m_isRunning;  // New bool member
