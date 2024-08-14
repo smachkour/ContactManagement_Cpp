@@ -49,7 +49,7 @@ inline bool isValidChoice(const std::string& choice) const {
 
     void setFavoriteContact();
     void displayFavoriteContact();
-    void setFavoriteContact(unsigned char index);
+    void setFavoriteContact();
 
     ContactManager m_contactManager;
     bool m_isRunning;  // New bool member

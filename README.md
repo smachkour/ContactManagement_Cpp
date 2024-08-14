@@ -7,6 +7,16 @@ This is a C++ project (cli) for managing contacts, including personal and busine
 - C++ compiler supporting C++11 or later (e.g., GCC, Clang)
 - CMake 3.10 or higher
 - Git
+- nlohmann/json library (included in the project under external)
+
+## Features
+
+- Add, remove, and display contacts
+- Support for both personal and business contacts
+- Save and load contacts from file
+- Auto-save functionality
+- Set and display favorite contacts
+- Import and export contacts in JSON format
 
 ## Building the Project
 

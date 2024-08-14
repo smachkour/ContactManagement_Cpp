@@ -229,6 +229,7 @@ void ContactUI::displayFavoriteContact() {
 }
 
 
+
 // Implement the friend function
 void displayContactCount(const ContactUI& ui) {
     std::cout << "Total contacts: " << ui.m_contactManager.getContactCount() << std::endl;
