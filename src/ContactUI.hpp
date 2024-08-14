@@ -15,7 +15,16 @@ public:
     // Friend function declaration
     friend void displayContactCount(const ContactUI& ui);
 
+    void exportContactsToJson();
+    void importContactsFromJson();
+
 private:
+    std::string ensureJsonExtension(const std::string& filename) const {
+        if (filename.size() >= 5 && filename.substr(filename.size() - 5) == ".json") {
+            return filename;
+        }
+        return filename + ".json";
+    }
     void displayMenu();
     void addContact();
     void removeContact();
@@ -29,10 +38,14 @@ private:
     // New function with default parameter
     void filterContacts(const std::function<bool(const Contact&)>& filter = [](const Contact&) { return true; });
 
-    // Inline function
-    inline bool isValidChoice(char choice) const {
-        return choice >= '1' && choice <= '9';
+inline bool isValidChoice(const std::string& choice) const {
+    if (choice.length() == 1) {
+        return choice[0] >= '1' && choice[0] <= '9';
+    } else if (choice.length() == 2) {
+        return choice == "10" || choice == "11";
     }
+    return false;
+}
 
     void setFavoriteContact();
     void displayFavoriteContact();

@@ -8,11 +8,10 @@ namespace contact_management {
 ContactUI::ContactUI() : m_isRunning(true) {}
 
 void ContactUI::run() {
-    unsigned char choice;
+    std::string choice;
     do {
         displayMenu();
-        std::cin >> choice;
-        std::cin.ignore();
+        std::getline(std::cin, choice);
         
         if (!isValidChoice(choice)) {
             std::cout << "Invalid choice. Please try again." << std::endl;
@@ -20,35 +19,44 @@ void ContactUI::run() {
         }
 
         try {
-            switch (choice) {
-                case '1':
+            int choiceNum = std::stoi(choice);
+            switch (choiceNum) {
+                   case 1:
                     addContact();
                     break;
-                case '2':
+                case 2:
                     removeContact();
                     break;
-                case '3':
+                case 3:
                     displayContacts();
                     break;
-                case '4':
+                case 4:
                     findContactsByName();
                     break;
-                case '5':
+                case 5:
                     saveContactsToFile();
                     break;
-                case '6':
+                case 6:
                     loadContactsFromFile();
                     break;
-                case '7':
+                case 7:
                     setFavoriteContact();
                     break;
-                case '8':
+                case 8:
                     displayFavoriteContact();
                     break;
-                case '9':
+                case 9:
+                    exportContactsToJson();
+                    break;
+                case 10:
+                    importContactsFromJson();
+                    break;
+                case 11:
                     m_isRunning = false;
                     std::cout << "Exiting..." << std::endl;
                     break;
+                default:
+                    std::cout << "Invalid choice. Please try again." << std::endl;
             }
         }
         catch (const std::exception& e) {
@@ -76,7 +84,9 @@ void ContactUI::displayMenu() {
     std::cout << "6. Load Contacts from File" << std::endl;
     std::cout << "7. Set Favorite Contact" << std::endl;
     std::cout << "8. Display Favorite Contact" << std::endl;
-    std::cout << "9. Exit" << std::endl;
+    std::cout << "9. Export Contacts to JSON" << std::endl;
+    std::cout << "10. Import Contacts from JSON" << std::endl;
+    std::cout << "11. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
@@ -97,9 +107,9 @@ void ContactUI::addContact() {
     if (isBusinessContact) {
         std::cout << "Enter company: ";
         std::getline(std::cin, company);
-        m_contactManager.addContact(BusinessContact(name, phone, email, company));
+        m_contactManager.addContact(std::make_shared<BusinessContact>(name, phone, email, company));
     } else {
-        m_contactManager.addContact(Contact(name, phone, email));
+        m_contactManager.addContact(std::make_shared<Contact>(name, phone, email));
     }
 
     std::cout << "Contact added successfully!" << std::endl;
@@ -208,6 +218,38 @@ void ContactUI::displayFavoriteContact() {
 // Implement the friend function
 void displayContactCount(const ContactUI& ui) {
     std::cout << "Total contacts: " << ui.m_contactManager.getContactCount() << std::endl;
+}
+
+void ContactUI::exportContactsToJson() {
+    std::string filename;
+    std::cout << "Enter the filename to export to (without extension): ";
+    std::getline(std::cin, filename);
+    
+    filename = ensureJsonExtension(filename);
+    
+    try {
+        m_contactManager.exportToJson(filename);
+        std::cout << "Contacts exported to JSON successfully: " << filename << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+}
+
+void ContactUI::importContactsFromJson() {
+    std::string filename;
+    std::cout << "Enter the filename to import from (without extension): ";
+    std::getline(std::cin, filename);
+    
+    filename = ensureJsonExtension(filename);
+    
+    try {
+        m_contactManager.importFromJson(filename);
+        std::cout << "Contacts imported from JSON successfully: " << filename << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
 
 } // namespace contact_management

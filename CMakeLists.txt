@@ -1,3 +1,6 @@
+set(JSON_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external")
+include_directories(${JSON_INCLUDE_DIR})
+
 cmake_minimum_required(VERSION 3.10)
 project(ContactManagement VERSION 1.0)
 

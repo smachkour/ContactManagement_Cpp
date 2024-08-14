@@ -24,16 +24,26 @@ ContactManager::~ContactManager() {
 void ContactManager::autoSaveFunction() {
     while (!m_stopAutoSave) {
         std::this_thread::sleep_for(std::chrono::seconds(30));  // Auto-save every 30 seconds
-        if (m_isModified) {
-            saveToFile("auto_save.txt");
-            std::cout << "Auto-saved contacts." << std::endl;
+        if (!m_stopAutoSave) {  // Check again after sleep
+            try {
+                if (m_isModified) {
+                    saveToFile("auto_save.txt");
+                    std::cout << "Auto-saved contacts." << std::endl;
+                    m_isModified = false;  // Reset the flag after successful save
+                }
+            } catch (const std::exception& e) {
+                std::cerr << "Auto-save failed: " << e.what() << std::endl;
+                // Consider setting m_isModified = true here to retry on next iteration
+            }
         }
     }
 }
 
 void ContactManager::startAutoSave() {
-    m_stopAutoSave = false;
-    m_autoSaveThread = std::thread(&ContactManager::autoSaveFunction, this);
+    if (!m_autoSaveThread.joinable()) {  // Only start if not already running
+        m_stopAutoSave = false;
+        m_autoSaveThread = std::thread(&ContactManager::autoSaveFunction, this);
+    }
 }
 
 void ContactManager::stopAutoSave() {
@@ -43,9 +53,14 @@ void ContactManager::stopAutoSave() {
     }
 }
 
-void ContactManager::addContact(const Contact& contact) {
-    m_contacts.push_back(std::make_shared<Contact>(contact));
+// Make sure to call this whenever contacts are modified
+void ContactManager::setModified() {
     m_isModified = true;
+}
+
+void ContactManager::addContact(std::shared_ptr<Contact> contact) {
+    m_contacts.push_back(std::move(contact));
+    setModified();
     m_isSorted = false;
 }
 
@@ -58,11 +73,13 @@ void ContactManager::removeContact(unsigned char index) {
         m_favoriteContact = nullptr;  // Clear favorite if it's being removed
     }
     m_contacts.erase(m_contacts.begin() + index);
-    m_isModified = true;
+    setModified();
 }
 
 void ContactManager::clearFavoriteContact() {
     m_favoriteContact = nullptr;
+        setModified();
+
 }
 
 const Contact* ContactManager::getFavoriteContact() const {
@@ -74,55 +91,53 @@ void ContactManager::setFavoriteContact(unsigned char index) {
         throw std::out_of_range("Invalid contact index");
     }
     m_favoriteContact = m_contacts[index];
+        setModified();
+
 }
 
 void ContactManager::displayAllContacts() const { // Renamed to avoid confusion
     displayContacts(m_contacts);
 }
 
-void ContactManager::saveToFile(const std::string& filename) const { // Const reference for function parameter and const member function
-    std::ofstream file(filename); // File I/O
+void ContactManager::saveToFile(const std::string& filename) const {
+    std::ofstream file(filename);
     if (!file) {
-        throw std::runtime_error("Unable to open file for writing"); // Exception handling
+        throw std::runtime_error("Unable to open file for writing");
     }
 
-    for (const auto& contact : m_contacts) { // Range-based for loop
+    for (const auto& contact : m_contacts) {
         file << contact->getName() << std::endl;
         file << contact->getPhone() << std::endl;
         file << contact->getEmail() << std::endl;
         
-        // Check if the contact is a BusinessContact (dynamic polymorphism ). If so, save the company field as well.
-        if (const BusinessContact* businessContact = dynamic_cast<const BusinessContact*>(contact.get())) {
+        // Check if the contact is a BusinessContact
+        if (const auto* businessContact = dynamic_cast<const BusinessContact*>(contact.get())) {
             file << businessContact->getCompany() << std::endl;
+        } else {
+            file << "N/A" << std::endl; // Write N/A for regular contacts
         }
         file << std::endl;
     }
-        m_isModified = false;
+    m_isModified = false;
 }
 
-void ContactManager::loadFromFile(const std::string& filename) { // Const reference for function parameter
-    std::ifstream file(filename); // File I/O
+void ContactManager::loadFromFile(const std::string& filename) {
+    std::ifstream file(filename);
     if (!file) {
-        throw std::runtime_error("Unable to open file for reading"); // Exception handling
+        throw std::runtime_error("Unable to open file for reading");
     }
 
-    std::string name;
-    std::string phone;
-    std::string email;
-    std::string company;
+    m_contacts.clear(); // Clear existing contacts before loading
 
-    while (std::getline(file, name)) { // String handling
-        std::getline(file, phone);
-        std::getline(file, email);
-        std::getline(file, company);
-        
-        if (!company.empty()) {
-            m_contacts.push_back(std::make_shared<BusinessContact>(name, phone, email, company)); // Dynamic memory allocation
+    std::string name, phone, email, company;
+    while (std::getline(file, name) && std::getline(file, phone) && std::getline(file, email) && std::getline(file, company)) {
+        if (company != "N/A") {
+            m_contacts.push_back(std::make_shared<BusinessContact>(name, phone, email, company));
         } else {
-            m_contacts.push_back(std::make_shared<Contact>(name, phone, email)); // Dynamic memory allocation
+            m_contacts.push_back(std::make_shared<Contact>(name, phone, email));
         }
         
-        file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore any extra newline characters
+        file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore the empty line
     }
 
     m_isLoaded = true;
@@ -149,4 +164,55 @@ std::vector<std::shared_ptr<Contact>> ContactManager::filterContacts(const std::
     return filteredContacts;
 }
 
+void ContactManager::exportToJson(const std::string& filename) const {
+    json j;
+    for (const auto& contact : m_contacts) {
+        json contactJson;
+        contactJson["name"] = contact->getName();
+        contactJson["phone"] = contact->getPhone();
+        contactJson["email"] = contact->getEmail();
+        
+        if (const auto* businessContact = dynamic_cast<const BusinessContact*>(contact.get())) {
+            contactJson["company"] = businessContact->getCompany();
+        } else {
+            contactJson["company"] = "N/A";
+        }
+        
+        j["contacts"].push_back(contactJson);
+    }
+    
+    std::ofstream file(filename);
+    if (!file) {
+        throw std::runtime_error("Unable to open file for writing");
+    }
+    file << std::setw(4) << j << std::endl;
+}
+
+void ContactManager::importFromJson(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file) {
+        throw std::runtime_error("Unable to open file for reading");
+    }
+    
+    json j;
+    file >> j;
+    
+    m_contacts.clear(); // Clear existing contacts before importing
+
+    for (const auto& contactJson : j["contacts"]) {
+        std::string name = contactJson["name"];
+        std::string phone = contactJson["phone"];
+        std::string email = contactJson["email"];
+        std::string company = contactJson["company"];
+        
+        if (company != "N/A") {
+            m_contacts.push_back(std::make_shared<BusinessContact>(name, phone, email, company));
+        } else {
+            m_contacts.push_back(std::make_shared<Contact>(name, phone, email));
+        }
+    }
+
+    setModified();
+    m_isSorted = false;
+}
 } // namespace contact_management

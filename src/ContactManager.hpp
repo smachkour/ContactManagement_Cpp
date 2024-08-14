@@ -11,8 +11,11 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include "../external/json.hpp"
 
 namespace contact_management { // Everything in a self-made namespace
+using json = nlohmann::json;
+
 
 class ContactManager {
 public:
@@ -26,7 +29,7 @@ public:
     ~ContactManager();
 
     // Add a new contact
-    void addContact(const Contact& contact); // Const reference for function parameter
+    void addContact(std::shared_ptr<Contact> contact); // Shared pointer for dynamic memory allocation
     
     // Remove a contact by index
     void removeContact(unsigned char index); // Unsigned char for better memory efficiency
@@ -54,11 +57,13 @@ public:
     void clearFavoriteContact();
     const Contact* getFavoriteContact() const;
 
-    
+    void exportToJson(const std::string& filename) const;
+    void importFromJson(const std::string& filename);
+    void setModified();
 
 
 private:
-    std::vector<std::shared_ptr<Contact>> m_contacts; // Member variable using a container class and dynamic memory allocation
+    std::vector<std::shared_ptr<Contact>> m_contacts;
     mutable bool m_isModified;  // New bool to track if contacts have been modified
     bool m_isLoaded;    // New bool to track if contacts have been loaded from a file
     bool m_isSorted;    // New bool to track if contacts are sorted
