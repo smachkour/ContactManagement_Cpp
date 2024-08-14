@@ -190,18 +190,32 @@ void ContactUI::displayFilteredContacts(const std::vector<std::shared_ptr<Contac
 }
 
 void ContactUI::setFavoriteContact() {
-    unsigned char index;
-    std::cout << "Enter the index of the contact to set as favorite: ";
-    std::cin >> index;
-    std::cin.ignore();
+    std::vector<std::shared_ptr<Contact>> contacts = m_contactManager.getAllContacts();
     
-    try {
-        m_contactManager.setFavoriteContact(index);
-        std::cout << "Favorite contact set successfully!" << std::endl;
+    if (contacts.empty()) {
+        std::cout << "No contacts available to set as favorite." << std::endl;
+        return;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+
+    std::cout << "Select a contact to set as favorite:" << std::endl;
+    for (size_t i = 0; i < contacts.size(); ++i) {
+        std::cout << i + 1 << ". " << contacts[i]->getName() << std::endl;
     }
+
+    size_t choice;
+    while (true) {
+        std::cout << "Enter the number of the contact (1-" << contacts.size() << "): ";
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        if (choice > 0 && choice <= contacts.size()) {
+            break;
+        }
+        std::cout << "Invalid choice. Please try again." << std::endl;
+    }
+
+    m_contactManager.setFavoriteContact(choice - 1);  // Subtract 1 because array is 0-indexed
+    std::cout << "Favorite contact set to: " << contacts[choice - 1]->getName() << std::endl;
 }
 
 void ContactUI::displayFavoriteContact() {

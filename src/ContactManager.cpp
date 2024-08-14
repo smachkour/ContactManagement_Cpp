@@ -91,8 +91,7 @@ void ContactManager::setFavoriteContact(unsigned char index) {
         throw std::out_of_range("Invalid contact index");
     }
     m_favoriteContact = m_contacts[index];
-        setModified();
-
+    setModified();
 }
 
 void ContactManager::displayAllContacts() const { // Renamed to avoid confusion
@@ -214,5 +213,9 @@ void ContactManager::importFromJson(const std::string& filename) {
 
     setModified();
     m_isSorted = false;
+}
+
+const std::vector<std::shared_ptr<Contact>>& ContactManager::getAllContacts() const {
+    return m_contacts;
 }
 } // namespace contact_management

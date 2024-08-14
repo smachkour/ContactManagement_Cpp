@@ -61,6 +61,9 @@ public:
     void importFromJson(const std::string& filename);
     void setModified();
 
+    const std::vector<std::shared_ptr<Contact>>& getAllContacts() const;
+
+
 
 private:
     std::vector<std::shared_ptr<Contact>> m_contacts;
