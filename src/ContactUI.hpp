@@ -29,7 +29,7 @@ private:
     void addContact();
     void removeContact();
     void displayContacts();
-    void displayFilteredContacts(const std::vector<std::shared_ptr<Contact>>& contacts);
+    void displayFilteredContacts(const std::vector<std::shared_ptr<Contact>>& contacts, size_t limit = std::numeric_limits<size_t>::max());
 
     void findContactsByName();
     void saveContactsToFile();

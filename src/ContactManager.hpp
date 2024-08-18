@@ -50,7 +50,7 @@ public:
     std::vector<std::shared_ptr<Contact>> filterContacts(const std::function<bool(const Contact&)>& filter) const;
 
     // New function to get contact count
-    size_t getContactCount() const { return m_contacts.size(); }
+    uint16_t  getContactCount() const { return m_contacts.size(); }
 
         // New methods for favorite contact
     void setFavoriteContact(unsigned char index);
@@ -71,8 +71,7 @@ private:
     bool m_isLoaded;    // New bool to track if contacts have been loaded from a file
     bool m_isSorted;    // New bool to track if contacts are sorted
     std::shared_ptr<Contact> m_favoriteContact;  // New member variable
-
-        std::thread m_autoSaveThread;
+    std::thread m_autoSaveThread;
     std::atomic<bool> m_stopAutoSave;
     void autoSaveFunction();
     void startAutoSave();

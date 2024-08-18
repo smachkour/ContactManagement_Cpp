@@ -19,7 +19,8 @@ void ContactUI::run() {
         }
 
         try {
-            int choiceNum = std::stoi(choice);
+            // Memory efficient conversion from string to uint8_t
+            uint8_t choiceNum = static_cast<uint8_t>(std::stoi(choice));
             switch (choiceNum) {
                    case 1:
                     addContact();
@@ -120,14 +121,26 @@ void ContactUI::addContact() {
 }
 
 void ContactUI::removeContact() {
-    unsigned char index;
+    int index;
+    std::string input;
     std::cout << "Enter the index of the contact to remove: ";
-    std::cin >> index;
-    std::cin.ignore(); // Ignore the newline character
+    std::getline(std::cin, input);
     
     try {
-        m_contactManager.removeContact(index);
+        index = std::stoi(input);
+        
+        if (index < 1) {
+            throw std::out_of_range("Index must be a positive number.");
+        }
+        
+        m_contactManager.removeContact(index - 1); // Adjust for 0-based index
         std::cout << "Contact removed successfully!" << std::endl;
+    }
+    catch (const std::invalid_argument&) {
+        std::cerr << "Error: Invalid input. Please enter a number." << std::endl;
+    }
+    catch (const std::out_of_range& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -224,13 +237,16 @@ void ContactUI::filterContacts() {
     }
 
     auto filteredContacts = m_contactManager.filterContacts(filter);
-    displayFilteredContacts(filteredContacts);
+    displayFilteredContacts(filteredContacts,10);
 }
 
-void ContactUI::displayFilteredContacts(const std::vector<std::shared_ptr<Contact>>& contacts) {
-    for (const auto& contact : contacts) {
-        contact->displayDetails();
+void ContactUI::displayFilteredContacts(const std::vector<std::shared_ptr<Contact>>& contacts, size_t limit) {
+    for (size_t i = 0; i < std::min(contacts.size(), limit); ++i) {
+        contacts[i]->displayDetails();
         std::cout << std::endl;
+    }
+    if (contacts.size() > limit) {
+        std::cout << "... and " << contacts.size() - limit << " more contacts." << std::endl;
     }
 }
 

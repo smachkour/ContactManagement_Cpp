@@ -33,7 +33,7 @@ void ContactManager::autoSaveFunction() {
                 }
             } catch (const std::exception& e) {
                 std::cerr << "Auto-save failed: " << e.what() << std::endl;
-                // Consider setting m_isModified = true here to retry on next iteration
+                // Consider setting m_isModified = true here 
             }
         }
     }
